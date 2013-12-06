@@ -42,7 +42,8 @@ int main(int argc, char const *argv[])
     // Generate some shiiiitte
     __int8_t cell = 0;
     srand(12345);
-    for (int i = 0; i < numElements; ++i)
+    int i;
+    for (i = 0; i < numElements; ++i)
     {
         if((rand() % 100) <= density)
             cell = 1;
