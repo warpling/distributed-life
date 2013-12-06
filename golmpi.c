@@ -148,6 +148,11 @@ int main(int argc, char **argv)
       err = MPI_Wait(&recv_request0, &status);
       
       //insert game/cuda logic here
+
+      //otherBot and otherTop are Bot and Top pieces coming from other nodes. 
+      //Will need to use otherBot to calculate game at the top of the current node,
+      // and use otherTop to calculate game at the bottom of current node.
+      //ask Mike for clarification if this doesn't make sense
               
    }
 
