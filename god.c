@@ -19,7 +19,7 @@
 int main(int argc, char const *argv[])
 {
     if(argc < 3) {
-        fprintf(stderr, "Usage: god <numberOfCells> <filename> <optional density>\n");
+        fprintf(stderr, "Usage: god <totalNumberOfCells> <filename> <optional density>\n");
         return -1;
     }
 
