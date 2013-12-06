@@ -65,8 +65,8 @@ int main(int argc, char **argv)
       }
       else if(rank == nprocs - 1)
       {
-         err = MPI_Isend(myTop, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, send_request0); 
-         err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, recv_request0);
+         err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, send_request0); 
+         err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, recv_request0);
       }
       else
       {
