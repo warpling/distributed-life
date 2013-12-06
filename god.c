@@ -44,7 +44,7 @@ int main(int argc, char const *argv[])
     uint8_t cell = 0;
     srand(12345);
     int i;
-    for (i = 0; i < numElements; ++i)
+    for (i = 0; i < numElements; i++)
     {
         if((rand() % 100) <= density)
             cell = 1;
