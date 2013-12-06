@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 int main(int argc, char const *argv[])
 {
@@ -34,13 +35,13 @@ int main(int argc, char const *argv[])
     }
 
     FILE *fp = fopen((char *)argv[2], "w");
-    __int32_t numElements = atoi(argv[1]);
+    int32_t numElements = atoi(argv[1]);
 
     // Write out the number of elements
     fwrite(&numElements, 4, 1, fp);
 
     // Generate some shiiiitte
-    __int8_t cell = 0;
+    uint8_t cell = 0;
     srand(12345);
     int i;
     for (i = 0; i < numElements; ++i)

@@ -16,7 +16,7 @@ int8_t* getGameTile(void *filename) {
         fread(&numElements, 4, 1, fp);
         // Read the elements into a 1D array
         int numElementsInSubarray = numElements / n_procs;
-        int8_t *subArray = (int8_t *) malloc((numElementsInSubarray + 1) * sizeof(int8_t));
+        uint8_t *subArray = (int8_t *) malloc((numElementsInSubarray + 1) * sizeof(int8_t));
         fseek(fp, (numElementsInSubarray * rank), SEEK_CUR);
         fread(subArray, 1, numElementsInSubarray, fp);
         printf("Read in %d cells.\n", numElements);
