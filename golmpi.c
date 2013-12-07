@@ -82,6 +82,8 @@ int main(int argc, char **argv)
       
       //insert game/cuda logic here
 
+      natural_select(otherBot, otherTop, myBoard, width);
+
       //otherBot and otherTop are Bot and Top pieces coming from other nodes. 
       //Will need to use otherBot to calculate game at the top of the current node,
       // and use otherTop to calculate game at the bottom of current node.
