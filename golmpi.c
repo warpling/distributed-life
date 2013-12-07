@@ -1,18 +1,4 @@
-#include <float.h>
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include "mpi.h"
-
-#define TOP 0
-#define BOT 1
-
-int rank;
-int nprocs;
+#include "golmpi.h"
 
 int main(int argc, char **argv)
 {
@@ -27,27 +13,21 @@ int main(int argc, char **argv)
 
    int maxGen = atoi(argv[1]);
 
+   int numElements = getDeclaredElementCount(argv[2]);
+
    int width = sqrt(numElements);
    int length = numElements / nprocs;
-   int myBoard [length];
-   int *myTop;//width
-   int *myBot;//width
-   int otherBot[width];
-   int otherTop[width];
-   int hasOtherTop = 1;
-   int hasOtherBot = 1;
+   uint8_t* myBoard; //length
+   uint8_t* myTop;//width
+   uint8_t* myBot;//width
+   uint8_t* otherBot;// width
+   uint8_t* otherTop;// width
    
+   otherBot = (uint8_t *) calloc(width, sizeof(int));   
+   otherTop = (uint8_t *) calloc(width, sizeof(int));   
 
    //read data here
-
-   if(rank == 0) 
-   {
-      hasOtherTop = 0;
-   }
-   else if(rank == nprocs - 1)
-   {
-      hasOtherBot = 0;
-   }
+   myBoard = getGameTile(argv[2]); 
 
    int err;
    int i;
@@ -57,23 +37,27 @@ int main(int argc, char **argv)
 
    for(i = 0; i < maxGen; i++)
    {
+      //set myTop and myBot
+      myTop = myBoard;
+      myBot = myBoard + (length * sizeof(int)) - (width * sizeof(int));
+
       //send other top and bottoms around, TOP and BOT relative to sender
       if(rank == 0)
       {
-         err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, send_request0); 
-         err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, recv_request0);
+         err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
+         err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
       }
       else if(rank == nprocs - 1)
       {
-         err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, send_request0); 
-         err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, recv_request0);
+         err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, &send_request0); 
+         err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, &recv_request0);
       }
       else
       {
-         err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, send_request0); 
-         err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, send_request1); 
-         err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, recv_request0);
-         err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, recv_request1);
+         err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
+         err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, &send_request1); 
+         err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
+         err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, &recv_request1);
          err = MPI_Wait(&send_request1, &status);
          err = MPI_Wait(&recv_request1, &status);
       }
@@ -91,14 +75,54 @@ int main(int argc, char **argv)
               
    }
 
-   
    //mpi gather junk
+   uint8_t* gameBoard;
+   
    if(rank == 0)
    {
-      int gameBoard[numElements];
-      MPI_Gather(myBoard, length, MPI_INT, gameBoard, MPI_INT, rank, MPI_COMM_WORLD);
+      gameBoard = (uint8_t*)calloc(numElements, sizeof(uint8_t));
    }
 
-   //output junk
+   MPI_Gather(myBoard, length, MPI_INT, gameBoard, length,  MPI_INT, ROOT, MPI_COMM_WORLD);
 
+   //output junk
+   printf("made it to outputting!\n");
+}
+
+// Takes a file of 'cells' (one byte ints) and reads them into a 1D array
+// Assumes first four bytes contains an int representing the number of 'cells'
+// Assumes rank is global to the node reading in the file
+int8_t* getGameTile(char *filename) {
+   FILE *fp = fopen((char *)filename, "r");
+
+    if (fp) {
+        // The first four bytes should contain the number of cells to be read in
+        int32_t numElements;
+        // lol what's error handling?
+        fread(&numElements, 4, 1, fp);
+        // Read the elements into a 1D array
+        int numElementsInSubarray = numElements / nprocs;
+        uint8_t *subArray = (int8_t *) malloc((numElementsInSubarray + 1) * sizeof(int8_t));
+        fseek(fp, (numElementsInSubarray * rank), SEEK_CUR);
+        fread(subArray, 1, numElementsInSubarray, fp);
+        printf("Read in %d cells.\n", numElements);
+
+        // Get rid of dat shit
+        return subArray;
+    }
+    return 0;
+}
+
+int32_t getDeclaredElementCount(char * filename){
+    FILE *fp = fopen((char *)filename, "r");
+
+    if (fp) {
+        // The first four bytes should contain the number of cells to be read in
+        int32_t numElements;
+        fread(&numElements, 4, 1, fp);
+        fclose(fp);
+        return numElements;
+    }
+
+     return 0;
 }

@@ -9,14 +9,11 @@ CUDA_LIBS=-L/usr/local/cuda/lib64 -lcudart
 
 all: golmpi
 
-golmpi: golmpi.o tiler.o life.o
-		$(CC) $(CUDA_INC) $(CUDA_LIBS) $(LIBS) golmpi.o tiler.o life.o -o golmpi
+golmpi: golmpi.o life.o
+		$(CC) $(CUDA_INC) $(CUDA_LIBS) $(LIBS) golmpi.o life.o -o golmpi
 
-golmpi.o: golmpi.c
+golmpi.o: golmpi.c golmpi.h
 		$(CC) $(OBJ_FLAGS) golmpi.c
-
-tiler.o: tiler.c
-		$(CC) $(OBJ_FLAGS) tiler.c
 
 life.o: life.cu
 		$(NVCC) $(OBJ_FLAGS) life.cu
