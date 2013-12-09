@@ -37,9 +37,16 @@ int main(int argc, char **argv)
 
    for(i = 0; i < maxGen; i++)
    {
+      printf("rank %d current gen %d\n", rank, i);
       //set myTop and myBot
       myTop = myBoard;
-      myBot = myBoard + (length * sizeof(int)) - (width * sizeof(int));
+
+      printf("rank %d myTop ", rank);
+      printArray(myTop, width);
+
+      myBot = myBoard + (length * sizeof(uint8_t)) - (width * sizeof(uint8_t));
+      printf("rank %d myBot ", rank);
+      printArray(myBot, width);
 
       //send other top and bottoms around, TOP and BOT relative to sender
       if(rank == 0)
@@ -66,7 +73,13 @@ int main(int argc, char **argv)
       
       //insert game/cuda logic here
 
+
+      printf("rank %d myBoard ", rank);
+      printArray(myBoard, width*width);
+
       natural_select(otherBot, otherTop, myBoard, width);
+
+
 
       //otherBot and otherTop are Bot and Top pieces coming from other nodes. 
       //Will need to use otherBot to calculate game at the top of the current node,
@@ -78,15 +91,18 @@ int main(int argc, char **argv)
    //mpi gather junk
    uint8_t* gameBoard;
    
-   if(rank == 0)
-   {
-      gameBoard = (uint8_t*)calloc(numElements, sizeof(uint8_t));
-   }
+//   if(rank == 0)
+//   {
+   gameBoard = (uint8_t*)calloc(numElements, sizeof(uint8_t));
+//   }
+   
+   MPI_Barrier(MPI_COMM_WORLD);
 
    MPI_Gather(myBoard, length, MPI_INT, gameBoard, length,  MPI_INT, ROOT, MPI_COMM_WORLD);
 
    //output junk
    printf("made it to outputting!\n");
+   saveFrame(gameBoard, numElements, "output.txt"); 
    MPI_Finalize();
    return 0;
 }
@@ -104,10 +120,10 @@ int8_t* getGameTile(char *filename) {
         fread(&numElements, 4, 1, fp);
         // Read the elements into a 1D array
         int numElementsInSubarray = numElements / nprocs;
-        uint8_t *subArray = (int8_t *) malloc((numElementsInSubarray + 1) * sizeof(int8_t));
+        uint8_t *subArray = (uint8_t *) malloc((numElementsInSubarray + 1) * sizeof(uint8_t));
         fseek(fp, (numElementsInSubarray * rank), SEEK_CUR);
         fread(subArray, 1, numElementsInSubarray, fp);
-        printf("Read in %d cells.\n", numElements);
+        printf("Read in %d cells.\n", numElementsInSubarray);
 
         // Get rid of dat shit
         return subArray;
@@ -133,12 +149,22 @@ int32_t getDeclaredElementCount(char * filename){
 // This function can easily be broked. Please don't breaked it.
 void saveFrame(uint8_t *array, int arraySize, char *filename) {
    FILE *fp = fopen(filename, "w");
-
+   int i;
     if (fp) {
         for (i = 0; i < arraySize; i++) {
             fwrite(&array[i], 1, 1, fp);
-        {
+        }
     }
 
     fclose(fp);
+}
+
+void printArray(uint8_t *array, int arraySize)
+{
+   int i;
+   for(i = 0; i < arraySize; i++)
+   {
+      printf("%x", array[i]); 
+   }
+   printf("\n");
 }

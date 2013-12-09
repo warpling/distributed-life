@@ -19,4 +19,6 @@ int nprocs;
 
 int8_t* getGameTile(char *filename);
 int32_t getDeclaredElementCount(char * filename);
+void saveFrame(uint8_t *array, int arraySize, char *filename); 
+void printArray(uint8_t *array, int arraySize);
 

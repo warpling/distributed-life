@@ -23,4 +23,4 @@ clean:
 
 test:
 	make
-	time mpirun -mca btl_tcp_if_include eth0 -n 4 --hostfile my_hostfile golmpi 1 10000.in 
+	time mpirun -mca btl_tcp_if_include eth0 -n 4 --hostfile my_hostfile golmpi 5 10000.in 
