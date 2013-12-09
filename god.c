@@ -25,7 +25,7 @@ int main(int argc, char const *argv[])
     }
 
     // Make some binary files full o' rando shit
-    int density;
+    int density = 40;
     if(argc == 4) {
         density = atoi(argv[3]);
         if (density < 0 || density > 100) {
