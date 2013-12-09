@@ -25,8 +25,8 @@ extern "C" void natural_select(uint8_t *top, uint8_t *bot, uint8_t *grid,
    CUDA_SAFE_CALL(cudaMemcpy(grid, dev_output + width,
          width * width * sizeof(uint8_t), TO_HOST));
 
-   cudaFree(dev_input);
-   cudaFree(dev_output);
+//   cudaFree(dev_input);
+//   cudaFree(dev_output);
 }
 
 __global__ void life(uint8_t *grid, uint8_t *output_grid, int width) {

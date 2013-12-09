@@ -87,6 +87,8 @@ int main(int argc, char **argv)
 
    //output junk
    printf("made it to outputting!\n");
+   MPI_Finalize();
+   return 0;
 }
 
 // Takes a file of 'cells' (one byte ints) and reads them into a 1D array

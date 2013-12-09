@@ -20,3 +20,7 @@ life.o: life.cu
 
 clean:
 		rm -rf golmpi *.o
+
+test:
+	make
+	time mpirun -mca btl_tcp_if_include eth0 -n 4 --hostfile my_hostfile golmpi 1 10000.in 
