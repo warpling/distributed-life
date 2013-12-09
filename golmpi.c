@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
       //send other top and bottoms around, TOP and BOT relative to sender
       if(nprocs > 1) {
-         if(rank == 0)
+         if(rank == ROOT)
          {
             err = MPI_Isend(myBot, width, MPI_BYTE, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
             err = MPI_Irecv(otherTop, width, MPI_BYTE, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
@@ -90,19 +90,19 @@ int main(int argc, char **argv)
    //mpi gather junk
    uint8_t* gameBoard;
    
-//   if(rank == 0)
-//   {
-   gameBoard = (uint8_t*)calloc(numElements, sizeof(uint8_t));
-//   }
+   if(rank == ROOT)
+   {
+      gameBoard = (uint8_t*)calloc(numElements, sizeof(uint8_t));
+   }
    
-   MPI_Gather(myBoard, length, MPI_BYTE, gameBoard, numElements, MPI_BYTE, ROOT, MPI_COMM_WORLD);
+   MPI_Gather(myBoard, length, MPI_BYTE, gameBoard, length, MPI_BYTE, ROOT, MPI_COMM_WORLD);
 
    //output junk
-   if (rank == 0) {
+   if (rank == ROOT) {
       printf("made it to outputting!\n");
       saveFrame(gameBoard, numElements, "output.txt"); 
       printf("Final board:\n");
-      printArray(myBoard, numElements);
+      printArray(gameBoard, numElements);
    }
    MPI_Finalize();
    return 0;
