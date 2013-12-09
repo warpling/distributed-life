@@ -142,6 +142,12 @@ int32_t getDeclaredElementCount(char * filename){
      return 0;
 }
 
+void saveFrame(uint8_t *array, int arraySize) {
+    for (i = 0; i < arraySize; i++) {
+      fwrite(&array[i], 1, 1, fp);
+  }
+}
+
 // Saves a 2D array of binary states out to a files of single byte unsigned ints
 // This function can easily be broked. Please don't breaked it.
 void saveFrame(uint8_t *array, int arraySize, char *filename) {
@@ -156,13 +162,36 @@ void saveFrame(uint8_t *array, int arraySize, char *filename) {
     fclose(fp);
 }
 
+// Assumes the input array represents a square
 void printArray(uint8_t *array, int arraySize)
 {
-   int i;
-   for(i = 0; i < arraySize; i++)
-   {
-      printf("%x", array[i]); 
-   }
-   printf("\n");
-   fflush(stdout);
+  if(arraySize > 10000) {
+    fprintf(stderr, "Are you kidding me? You want to print %d little squares?\nI just saved your ass and your buffer.", arraySize);
+  }
+  else {
+
+    char EMPTY_SQUARE[]  = {0xe2, 0x96, 0xA2, '\0'};
+    char FILLED_SQUARE[]  = {0xe2, 0x96, 0xA3, '\0'};
+
+    int i;
+
+    for(i = 0; i < arraySize; i++)
+    {
+        // Make dem line breaks
+        // Make dem assumptions about square arrays
+        if(i % ((int)sqrt(arraySize)) == 0) {
+          printf("\n");
+        }
+
+        if(array[i] == 1) {
+          printf("%s ", FILLED_SQUARE);
+        }
+        else {
+          printf("%s ", EMPTY_SQUARE);
+        }
+    }
+
+    printf("\n");
+    fflush(stdout);
+  }
 }
