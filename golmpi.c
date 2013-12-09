@@ -48,27 +48,29 @@ int main(int argc, char **argv)
       printArray(myBot, width);
 
       //send other top and bottoms around, TOP and BOT relative to sender
-      if(rank == 0)
-      {
-         err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
-         err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
+      if(nprocs > 1) {
+         if(rank == 0)
+         {
+            err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
+            err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
+         }
+         else if(rank == nprocs - 1)
+         {
+            err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, &send_request0); 
+            err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, &recv_request0);
+         }
+         else
+         {
+            err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
+            err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, &send_request1); 
+            err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
+            err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, &recv_request1);
+            err = MPI_Wait(&send_request1, &status);
+            err = MPI_Wait(&recv_request1, &status);
+         }
+         err = MPI_Wait(&send_request0, &status);
+         err = MPI_Wait(&recv_request0, &status);
       }
-      else if(rank == nprocs - 1)
-      {
-         err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, &send_request0); 
-         err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, &recv_request0);
-      }
-      else
-      {
-         err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
-         err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, &send_request1); 
-         err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
-         err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, &recv_request1);
-         err = MPI_Wait(&send_request1, &status);
-         err = MPI_Wait(&recv_request1, &status);
-      }
-      err = MPI_Wait(&send_request0, &status);
-      err = MPI_Wait(&recv_request0, &status);
       
       //insert game/cuda logic here
 
@@ -77,7 +79,7 @@ int main(int argc, char **argv)
       printf("\nrank %d gen %d myBoard ", rank, i);
       printArray(myBoard, length);
 
-      natural_select(otherBot, otherTop, myBoard, width, width / nprocs);
+      natural_select(otherBot, otherTop, myBoard, width, length / nprocs);
 
       //otherBot and otherTop are Bot and Top pieces coming from other nodes. 
       //Will need to use otherBot to calculate game at the top of the current node,
