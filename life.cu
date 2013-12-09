@@ -3,7 +3,8 @@
 #include "cutil.h"
 #include "life.h"
 
-__global__ void life(uint8_t *grid, uint8_t *output_grid, int width);
+__global__ void life(uint8_t *grid, uint8_t *output_grid, int width,
+      int height);
 
 extern "C" void natural_select(uint8_t *top, uint8_t *bot, uint8_t *grid,
       int width, int height) {
