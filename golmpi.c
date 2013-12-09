@@ -77,7 +77,7 @@ int main(int argc, char **argv)
       printf("rank %d myBoard ", rank);
       printArray(myBoard, width*width);
 
-      natural_select(otherBot, otherTop, myBoard, width);
+      natural_select(otherBot, otherTop, myBoard, width, width / nprocs);
 
 
 
