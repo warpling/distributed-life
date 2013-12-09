@@ -37,15 +37,14 @@ int main(int argc, char **argv)
 
    for(i = 0; i < maxGen; i++)
    {
-      printf("rank %d current gen %d\n", rank, i);
       //set myTop and myBot
       myTop = myBoard;
 
-      printf("rank %d myTop ", rank);
+      printf("\nrank %d gen %d myTop ", rank, i);
       printArray(myTop, width);
 
       myBot = myBoard + (length * sizeof(uint8_t)) - (width * sizeof(uint8_t));
-      printf("rank %d myBot ", rank);
+      printf("\nrank %d gen %d myBot ", rank, i);
       printArray(myBot, width);
 
       //send other top and bottoms around, TOP and BOT relative to sender
@@ -74,18 +73,16 @@ int main(int argc, char **argv)
       //insert game/cuda logic here
 
 
-      printf("rank %d myBoard ", rank);
-      printArray(myBoard, width*width);
+      MPI_Barrier(MPI_COMM_WORLD);              
+      printf("\nrank %d gen %d myBoard ", rank, i);
+      printArray(myBoard, length);
 
       natural_select(otherBot, otherTop, myBoard, width, width / nprocs);
-
-
 
       //otherBot and otherTop are Bot and Top pieces coming from other nodes. 
       //Will need to use otherBot to calculate game at the top of the current node,
       // and use otherTop to calculate game at the bottom of current node.
       //ask Mike for clarification if this doesn't make sense
-              
    }
 
    //mpi gather junk
@@ -167,4 +164,5 @@ void printArray(uint8_t *array, int arraySize)
       printf("%x", array[i]); 
    }
    printf("\n");
+   fflush(stdout);
 }
