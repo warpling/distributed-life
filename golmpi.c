@@ -126,3 +126,17 @@ int32_t getDeclaredElementCount(char * filename){
 
      return 0;
 }
+
+// Saves a 2D array of binary states out to a files of single byte unsigned ints
+// This function can easily be broked. Please don't breaked it.
+void saveFrame(uint8_t *array, int arraySize, char *filename) {
+   FILE *fp = fopen(filename, "w");
+
+    if (fp) {
+        for (i = 0; i < arraySize; i++) {
+            fwrite(&array[i], 1, 1, fp);
+        {
+    }
+
+    fclose(fp);
+}
