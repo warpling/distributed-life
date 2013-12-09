@@ -40,31 +40,31 @@ int main(int argc, char **argv)
       //set myTop and myBot
       myTop = myBoard;
 
-      printf("\nrank %d gen %d myTop ", rank, i);
-      printArray(myTop, width);
+      //printf("\nrank %d gen %d myTop ", rank, i);
+      //printArray(myTop, width);
 
-      myBot = myBoard + (length * sizeof(uint8_t)) - (width * sizeof(uint8_t));
-      printf("\nrank %d gen %d myBot ", rank, i);
-      printArray(myBot, width);
+      myBot = myBoard + length - width;
+      //printf("\nrank %d gen %d myBot ", rank, i);
+      //printArray(myBot, width);
 
       //send other top and bottoms around, TOP and BOT relative to sender
       if(nprocs > 1) {
          if(rank == 0)
          {
-            err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
-            err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
+            err = MPI_Isend(myBot, width, MPI_BYTE, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
+            err = MPI_Irecv(otherTop, width, MPI_BYTE, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
          }
          else if(rank == nprocs - 1)
          {
-            err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, &send_request0); 
-            err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, &recv_request0);
+            err = MPI_Isend(myTop, width, MPI_BYTE, rank - 1, TOP, MPI_COMM_WORLD, &send_request0); 
+            err = MPI_Irecv(otherBot, width, MPI_BYTE, rank - 1, BOT, MPI_COMM_WORLD, &recv_request0);
          }
          else
          {
-            err = MPI_Isend(myBot, width, MPI_INT, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
-            err = MPI_Isend(myTop, width, MPI_INT, rank - 1, TOP, MPI_COMM_WORLD, &send_request1); 
-            err = MPI_Irecv(otherTop, width, MPI_INT, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
-            err = MPI_Irecv(otherBot, width, MPI_INT, rank - 1, BOT, MPI_COMM_WORLD, &recv_request1);
+            err = MPI_Isend(myBot, width, MPI_BYTE, rank + 1, BOT, MPI_COMM_WORLD, &send_request0); 
+            err = MPI_Isend(myTop, width, MPI_BYTE, rank - 1, TOP, MPI_COMM_WORLD, &send_request1); 
+            err = MPI_Irecv(otherTop, width, MPI_BYTE, rank + 1, TOP, MPI_COMM_WORLD, &recv_request0);
+            err = MPI_Irecv(otherBot, width, MPI_BYTE, rank - 1, BOT, MPI_COMM_WORLD, &recv_request1);
             err = MPI_Wait(&send_request1, &status);
             err = MPI_Wait(&recv_request1, &status);
          }
@@ -76,10 +76,10 @@ int main(int argc, char **argv)
 
 
       MPI_Barrier(MPI_COMM_WORLD);              
-      printf("\nrank %d gen %d myBoard ", rank, i);
+      printf("\nrank %d gen %d size %d myBoard ", rank, i, length);
       printArray(myBoard, length);
 
-      natural_select(otherBot, otherTop, myBoard, width, length / nprocs);
+      natural_select(otherBot, otherTop, myBoard, width, width / nprocs);
 
       //otherBot and otherTop are Bot and Top pieces coming from other nodes. 
       //Will need to use otherBot to calculate game at the top of the current node,
@@ -95,13 +95,15 @@ int main(int argc, char **argv)
    gameBoard = (uint8_t*)calloc(numElements, sizeof(uint8_t));
 //   }
    
-   MPI_Barrier(MPI_COMM_WORLD);
-
-   MPI_Gather(myBoard, length, MPI_INT, gameBoard, length,  MPI_INT, ROOT, MPI_COMM_WORLD);
+   MPI_Gather(myBoard, length, MPI_BYTE, gameBoard, numElements, MPI_BYTE, ROOT, MPI_COMM_WORLD);
 
    //output junk
-   printf("made it to outputting!\n");
-   saveFrame(gameBoard, numElements, "output.txt"); 
+   if (rank == 0) {
+      printf("made it to outputting!\n");
+      saveFrame(gameBoard, numElements, "output.txt"); 
+      printf("Final board:\n");
+      printArray(myBoard, numElements);
+   }
    MPI_Finalize();
    return 0;
 }
@@ -119,7 +121,7 @@ int8_t* getGameTile(char *filename) {
         fread(&numElements, 4, 1, fp);
         // Read the elements into a 1D array
         int numElementsInSubarray = numElements / nprocs;
-        uint8_t *subArray = (uint8_t *) malloc((numElementsInSubarray + 1) * sizeof(uint8_t));
+        uint8_t *subArray = (uint8_t *) malloc((numElementsInSubarray) * sizeof(uint8_t));
         fseek(fp, (numElementsInSubarray * rank), SEEK_CUR);
         fread(subArray, 1, numElementsInSubarray, fp);
         printf("Read in %d cells.\n", numElementsInSubarray);

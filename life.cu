@@ -18,7 +18,7 @@ extern "C" void natural_select(uint8_t *top, uint8_t *bot, uint8_t *grid,
    CUDA_SAFE_CALL(cudaMemcpy(dev_input, top, width * sizeof(uint8_t), TO_DEV));
    CUDA_SAFE_CALL(cudaMemcpy(dev_input + width, grid,
             width * height * sizeof(uint8_t), TO_DEV));
-   CUDA_SAFE_CALL(cudaMemcpy(dev_input + (width * height), bot,
+   CUDA_SAFE_CALL(cudaMemcpy(dev_input + (width * height) + width, bot,
             width * sizeof(uint8_t), TO_DEV));
 
    life<<<MAX_BLOCKS, THREADS_PER_BLOCK>>>(dev_input, dev_output, width,
@@ -35,10 +35,10 @@ __global__ void life(uint8_t *grid, uint8_t *output_grid, int width,
       int height) {
    // Find the focus cell, ignore the first row
    int cell_id = width + blockIdx.x * blockDim.x + threadIdx.x;
-   int live_neighbors;
+   uint8_t live_neighbors;
    int row_idx, col_idx, neighbor_id;
 
-   while (cell_id < width * height) {
+   while (cell_id < (width * height) + width) {
 
       // Iterate through neighboring blocks and count those which are alive
       live_neighbors = 0;
@@ -50,8 +50,8 @@ __global__ void life(uint8_t *grid, uint8_t *output_grid, int width,
              * the focus cell.
              */
             neighbor_id = (cell_id + col_idx - 1) + (width * (row_idx - 1));
-            if (neighbor_id > 0 && neighbor_id != cell_id
-                  && neighbor_id < width * height) {
+            if (neighbor_id < 0 || neighbor_id == cell_id
+                  || neighbor_id >= (width * height) + (2 * width)) {
                continue;
             }
 
