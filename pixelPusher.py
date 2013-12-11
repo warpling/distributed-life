@@ -5,17 +5,18 @@ from PIL import Image
 from bmp import BitMap, Color
 
 def main():
-   if len(sys.argv) < 2:
-      print "Usage: pixelPusher <inputFile>"
+   if len(sys.argv) < 3:
+      print "Usage: pixelPusher <numElements>  <inputFile>"
       sys.exit(1)
 
-   for infile in sys.argv[1:]:
+   for infile in sys.argv[2:]:
 #        name, e = os.path.splitext(infile)
 #        print "name " + name +" e " + e
         ints = []
         f = open(infile, "rb")
         try:  
-           numElements = struct.unpack('i', f.read(4))[0]
+#           numElements = struct.unpack('i', f.read(4))[0]
+           numElements = int(sys.argv[1])
            print "numElements = ", numElements 
            byte = f.read(1) 
            for i in range(numElements):
