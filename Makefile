@@ -8,19 +8,22 @@ LIBS=-lmpi
 CUDA_INC=-I/usr/local/cuda/common/inc
 CUDA_LIBS=-L/usr/local/cuda/lib64 -lcudart
 
-all: golmpi
+all: golmpi god
+
+god: god.c
+		$(CC) god.c -o god
 
 golmpi: golmpi.o life.o
-		$(CC) $(DEBUG) $(CUDA_INC) $(CUDA_LIBS) $(LIBS) golmpi.o life.o -o golmpi
+		$(CC) $(CUDA_INC) $(CUDA_LIBS) $(LIBS) golmpi.o life.o -o golmpi
 
 golmpi.o: golmpi.c golmpi.h
-		$(CC) $(DEBUG) $(OBJ_FLAGS) golmpi.c
+		$(CC) $(OBJ_FLAGS) golmpi.c
 
 life.o: life.cu
-		$(NVCC) $(DEBUG) $(OBJ_FLAGS) life.cu
+		$(NVCC) $(OBJ_FLAGS) life.cu
 
 clean:
-		rm -rf golmpi *.o
+		rm -rf god golmpi *.o
 
 test40:
 	make
