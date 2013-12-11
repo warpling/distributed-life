@@ -1,5 +1,6 @@
 import os, sys
 import struct
+
 #import Image
 # such Python
 
@@ -30,17 +31,6 @@ def main():
       print ints
 
    outfile = "out.jpg"
-
-#    try: # much whitespace
-#       image = Image.open(infile)#.save(outfile)
-#       print infile, image.format, "%dx%d" % image.size, image.mode
-#    except IOError:
-#        print "cannot convert", infile
-
-#box = (100,100,400,400)
-#region = image.crop(box)
-#region = region.transpose(Image.ROTATE_180)
-#image.paste(region, box)
 
 if __name__ == "__main__":
    main()
