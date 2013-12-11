@@ -4,7 +4,7 @@ import struct
 # such Python
 
 def main():
-   if len(sys.argv) != 2:
+   if len(sys.argv) < 2:
       print "Usage: pixelPusher <inputFile>"
       sys.exit(1)
    print "hey!"
@@ -28,6 +28,7 @@ def main():
       finally:
          f.close()
       print ints
+
    outfile = "out.jpg"
 
 #    try: # much whitespace
