@@ -13,6 +13,8 @@
 #define TOP 0
 #define BOT 1
 #define ROOT 0
+#define DEMOFRAMES 4
+#define OUTPUT 6
 
 int rank;
 int nprocs;

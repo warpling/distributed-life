@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 
       MPI_Barrier(MPI_COMM_WORLD);              
       printf("\nrank %d gen %d size %d myBoard ", rank, i, length);
-      printArray(myBoard, length);
+//      printArray(myBoard, length);
 
       natural_select(otherBot, otherTop, myBoard, width, width / nprocs);
 
@@ -85,6 +85,27 @@ int main(int argc, char **argv)
       //Will need to use otherBot to calculate game at the top of the current node,
       // and use otherTop to calculate game at the bottom of current node.
       //ask Mike for clarification if this doesn't make sense
+
+      uint8_t* gameBoard;
+      
+      if(rank == ROOT)
+      {
+         gameBoard = (uint8_t*)calloc(numElements, sizeof(uint8_t));
+      }
+      
+      MPI_Gather(myBoard, length, MPI_BYTE, gameBoard, length, MPI_BYTE, ROOT, MPI_COMM_WORLD);
+
+      //output junk
+      if (rank == ROOT) {
+         char* fileout;
+         fileout = (char*)malloc(OUTPUT + DEMOFRAMES * sizeof(char));
+//         printf("output%04d\n", i);
+         sprintf(fileout, "output%04d", i);
+         saveFrame(gameBoard, numElements, fileout); 
+         printf("Generation %d board:\n", i);
+         printArray(gameBoard, numElements);
+      }
+      free(gameBoard);
    }
 
    //mpi gather junk

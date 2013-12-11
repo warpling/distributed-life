@@ -32,3 +32,7 @@ test40:
 test90:
 	make
 	time mpirun -mca btl_tcp_if_include eth0 -n 4 --hostfile my_hostfile golmpi 5 90.in 
+
+test50:
+	make
+	time mpirun -mca btl_tcp_if_include eth0 -n 8 --hostfile my_hostfile golmpi 10000 100000.in 
