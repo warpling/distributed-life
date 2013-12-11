@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 
 
       MPI_Barrier(MPI_COMM_WORLD);              
-      printf("\nrank %d gen %d size %d myBoard ", rank, i, length);
+//      printf("\nrank %d gen %d size %d myBoard ", rank, i, length);
 //      printArray(myBoard, length);
 
       natural_select(otherBot, otherTop, myBoard, width, width / nprocs);
@@ -99,13 +99,14 @@ int main(int argc, char **argv)
       if (rank == ROOT) {
          char* fileout;
          fileout = (char*)malloc(OUTPUT + DEMOFRAMES * sizeof(char));
-//         printf("output%04d\n", i);
+         printf("output%04d\n", i);
          sprintf(fileout, "output%04d", i);
          saveFrame(gameBoard, numElements, fileout); 
-         printf("Generation %d board:\n", i);
-         printArray(gameBoard, numElements);
+//         printf("Generation %d board:\n", i);
+//         printArray(gameBoard, numElements);
+         free(fileout);
+         free(gameBoard);
       }
-      free(gameBoard);
    }
 
    //mpi gather junk
@@ -120,10 +121,10 @@ int main(int argc, char **argv)
 
    //output junk
    if (rank == ROOT) {
-      printf("made it to outputting!\n");
+//      printf("made it to outputting!\n");
       saveFrame(gameBoard, numElements, "output.txt"); 
-      printf("Final board:\n");
-      printArray(gameBoard, numElements);
+//      printf("Final board:\n");
+//      printArray(gameBoard, numElements);
    }
    MPI_Finalize();
    return 0;
@@ -145,7 +146,7 @@ int8_t* getGameTile(char *filename) {
         uint8_t *subArray = (uint8_t *) malloc((numElementsInSubarray) * sizeof(uint8_t));
         fseek(fp, (numElementsInSubarray * rank), SEEK_CUR);
         fread(subArray, 1, numElementsInSubarray, fp);
-        printf("Read in %d cells.\n", numElementsInSubarray);
+//        printf("Read in %d cells.\n", numElementsInSubarray);
 
         // Get rid of dat shit
         return subArray;
